@@ -1,25 +1,84 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
-@layer base {
-  body {
-    background-color: #0b0f17;
-    color: #e2e8f0;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  }
+@theme {
+  --color-canvas: rgb(var(--canvas));
+  --color-surface: rgb(var(--surface));
+  --color-subtle: rgb(var(--subtle));
+  --color-line: rgb(var(--line));
+  --color-ink: rgb(var(--ink));
+  --color-ink-muted: rgb(var(--ink-muted));
+  --color-ink-faint: rgb(var(--ink-faint));
+  --color-accent: rgb(var(--accent));
+  --color-accent-soft: rgb(var(--accent-soft));
+  --color-accent-fg: rgb(var(--accent-fg));
+  --color-success: rgb(var(--success));
+  --color-success-soft: rgb(var(--success-soft));
+  --color-warning: rgb(var(--warning));
+  --color-warning-soft: rgb(var(--warning-soft));
+  --color-danger: rgb(var(--danger));
+  --color-danger-soft: rgb(var(--danger-soft));
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 }
 
-/* Custom scrollbars */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+:root {
+  --canvas: 248 248 250;
+  --surface: 255 255 255;
+  --subtle: 243 244 246;
+  --line: 229 231 235;
+  --ink: 17 24 39;
+  --ink-muted: 75 85 99;
+  --ink-faint: 107 114 128;
+  --accent: 79 70 229;
+  --accent-soft: 238 242 255;
+  --accent-fg: 255 255 255;
+  --success: 21 128 61;
+  --success-soft: 236 253 243;
+  --warning: 180 83 9;
+  --warning-soft: 255 247 237;
+  --danger: 185 28 28;
+  --danger-soft: 254 242 242;
+  color-scheme: light;
 }
-::-webkit-scrollbar-track {
-  background: #111827;
+
+.dark {
+  --canvas: 11 15 23;
+  --surface: 17 22 33;
+  --subtle: 28 34 48;
+  --line: 40 48 64;
+  --ink: 237 239 244;
+  --ink-muted: 168 175 190;
+  --ink-faint: 128 136 152;
+  --accent: 129 140 248;
+  --accent-soft: 32 34 68;
+  --accent-fg: 15 17 30;
+  --success: 74 222 128;
+  --success-soft: 18 40 30;
+  --warning: 251 191 36;
+  --warning-soft: 45 35 15;
+  --danger: 248 113 113;
+  --danger-soft: 52 22 26;
+  color-scheme: dark;
 }
-::-webkit-scrollbar-thumb {
-  background: #374151;
-  border-radius: 3px;
+
+html,
+body,
+#root {
+  min-height: 100%;
 }
-::-webkit-scrollbar-thumb:hover {
-  background: #4b5563;
+
+body {
+  margin: 0;
+  font-family: 'Inter', system-ui, sans-serif;
+  background-color: rgb(var(--canvas));
+  color: rgb(var(--ink));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }

@@ -1,0 +1,65 @@
+/* @import url() FONT IMPORTS MUST ALWAYS BE AT THE VERY TOP OF THIS FILE, ABOVE THE TAILWIND IMPORTS — DO NOT DELETE THIS COMMENT */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* CRITICAL: THE FOLLOWING TAILWIND IMPORTS MUST NEVER BE DELETED OR REORDERED — DO NOT DELETE THIS COMMENT */
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+/* END TAILWIND IMPORTS — ALL OTHER CSS MUST GO BELOW THIS LINE */
+
+:root {
+  --canvas: 248 248 250;
+  --surface: 255 255 255;
+  --subtle: 243 244 246;
+  --line: 229 231 235;
+  --ink: 17 24 39;
+  --ink-muted: 75 85 99;
+  --ink-faint: 107 114 128;
+  --accent: 79 70 229;
+  --accent-soft: 238 242 255;
+  --accent-fg: 255 255 255;
+  --success: 21 128 61;
+  --success-soft: 236 253 243;
+  --warning: 180 83 9;
+  --warning-soft: 255 247 237;
+  --danger: 185 28 28;
+  --danger-soft: 254 242 242;
+  color-scheme: light;
+}
+.dark {
+  --canvas: 11 15 23;
+  --surface: 17 22 33;
+  --subtle: 28 34 48;
+  --line: 40 48 64;
+  --ink: 237 239 244;
+  --ink-muted: 168 175 190;
+  --ink-faint: 128 136 152;
+  --accent: 129 140 248;
+  --accent-soft: 32 34 68;
+  --accent-fg: 15 17 30;
+  --success: 74 222 128;
+  --success-soft: 18 40 30;
+  --warning: 251 191 36;
+  --warning-soft: 45 35 15;
+  --danger: 248 113 113;
+  --danger-soft: 52 22 26;
+  color-scheme: dark;
+}
+html,
+body,
+#root {
+  min-height: 100%;
+}
+body {
+  margin: 0;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
