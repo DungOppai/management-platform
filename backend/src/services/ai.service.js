@@ -310,14 +310,61 @@ Hãy tóm tắt ngắn gọn cuộc trò chuyện sau thành 3-5 ý cốt lõi n
 
   if (llmResult) return llmResult;
 
-  // Local engine fallback
+  // Local engine fallback: Intelligent extraction without external LLM
   const count = messages.length;
-  const recentMessages = messages.slice(-5);
-  return `📌 **Tóm tắt nhanh (${count} tin nhắn gần nhất):**
-- Thảo luận xoay quanh các đầu việc chính của dự án và phân công nhiệm vụ.
-- Các nội dung trọng tâm gần nhất:
-${recentMessages.map((m) => `  * **${m.sender_name}**: "${m.content.slice(0, 70)}${m.content.length > 70 ? '...' : ''}"`).join('\n')}
-- **Đề xuất:** Bấm vào tin nhắn để chuyển thành thẻ công việc trên bảng Kanban nếu đã chốt việc.`;
+  
+  // Lọc bỏ tin nhắn rác / chào hỏi ngắn vô nghĩa
+  const noisePatterns = /^(alo|hi|hello|ê|ơi|vâng|vâng e nghe|dạ|ok|okie|ừ|uhm|chào)(\s+.*)?$/i;
+  const meaningfulMessages = messages.filter((m) => {
+    const text = (m.content || '').trim();
+    if (text.length < 5) return false;
+    if (noisePatterns.test(text) && text.length < 15) return false;
+    return true;
+  });
+
+  // Tìm các câu giao việc / deadline / tiến độ
+  const actionableItems = [];
+  const progressUpdates = [];
+
+  meaningfulMessages.forEach((m) => {
+    const text = m.content;
+    const lower = text.toLowerCase();
+    const sender = m.sender_name || 'Thành viên';
+
+    if (lower.includes('trước') || lower.includes('hạn') || lower.includes('hoàn thiện') || lower.includes('nhé') || lower.includes('nhờ') || lower.includes('giúp')) {
+      actionableItems.push({ sender, text });
+    } else if (lower.includes('đang') || lower.includes('xong') || lower.includes('đã') || lower.includes('xử lý')) {
+      progressUpdates.push({ sender, text });
+    }
+  });
+
+  let summaryLines = [];
+  summaryLines.push(`📌 **Tổng hợp thảo luận (${count} tin nhắn trong kênh):**`);
+
+  if (actionableItems.length > 0) {
+    summaryLines.push(`\n**🎯 Yêu cầu & Đầu việc được giao:**`);
+    actionableItems.slice(-3).forEach((item) => {
+      summaryLines.push(`• **${item.sender}**: "${item.text}"`);
+    });
+  }
+
+  if (progressUpdates.length > 0) {
+    summaryLines.push(`\n**⚡ Cập nhật tiến độ thực tế:**`);
+    progressUpdates.slice(-3).forEach((item) => {
+      summaryLines.push(`• **${item.sender}**: "${item.text}"`);
+    });
+  }
+
+  if (actionableItems.length === 0 && progressUpdates.length === 0) {
+    summaryLines.push(`\n- Nhóm trao đổi các vấn đề kỹ thuật chung quanh dự án.`);
+    meaningfulMessages.slice(-3).forEach((m) => {
+      summaryLines.push(`• **${m.sender_name || 'Thành viên'}**: "${m.content}"`);
+    });
+  }
+
+  summaryLines.push(`\n💡 **Hành động gợi ý:** Bấm nút **"Tạo việc"** trên tin nhắn có yêu cầu công việc để AI tự động chuyển thành thẻ việc trên Kanban.`);
+
+  return summaryLines.join('\n');
 }
 
 module.exports = {

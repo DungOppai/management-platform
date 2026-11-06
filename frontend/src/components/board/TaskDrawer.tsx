@@ -74,7 +74,13 @@ export function TaskDrawer({ task, onClose }: TaskDrawerProps) {
                   value={task.status}
                   onChange={(e) => {
                     const status = e.target.value as TaskStatus;
-                    updateTask(task.id, { status, progress: status === 'done' ? 100 : task.progress });
+                    let nextProgress = task.progress;
+                    if (status === 'done') {
+                      nextProgress = 100;
+                    } else if (task.status === 'done' && task.progress === 100) {
+                      nextProgress = status === 'todo' ? 0 : 70;
+                    }
+                    updateTask(task.id, { status, progress: nextProgress });
                   }}
                   className={selectClass}>
                   
@@ -135,7 +141,17 @@ export function TaskDrawer({ task, onClose }: TaskDrawerProps) {
                     step={10}
                     value={task.progress}
                     aria-label="Tiến độ"
-                    onChange={(e) => updateTask(task.id, { progress: Number(e.target.value) })}
+                    onChange={(e) => {
+                      const progress = Number(e.target.value);
+                      const patch: Partial<Task> = { progress };
+                      if (progress === 100) {
+                        patch.status = 'done';
+                      } else if (task.status === 'done') {
+                        // Kéo xuống dưới 100% thì tự động chuyển khỏi trạng thái Hoàn thành
+                        patch.status = progress > 0 ? 'in_progress' : 'todo';
+                      }
+                      updateTask(task.id, patch);
+                    }}
                     className="h-1.5 flex-1 cursor-pointer accent-[rgb(var(--accent))]" />
                   
                     <span className="w-10 text-right tabular-nums text-ink">{task.progress}%</span>

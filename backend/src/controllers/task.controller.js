@@ -143,8 +143,12 @@ async function updateTask(req, res) {
       const progNum = Math.min(100, Math.max(0, parseInt(progress, 10) || 0));
       fields.push(`progress = $${idx++}`);
       values.push(progNum);
-      if (progNum === 100 && status === undefined) {
-        fields.push(`status = 'DONE'`);
+      if (status === undefined) {
+        if (progNum === 100) {
+          fields.push(`status = 'DONE'`);
+        } else {
+          fields.push(`status = CASE WHEN status = 'DONE' THEN (CASE WHEN ${progNum} > 0 THEN 'IN_PROGRESS' ELSE 'TODO' END) ELSE status END`);
+        }
       }
     }
     if (dueDate !== undefined) {

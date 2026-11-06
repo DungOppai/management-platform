@@ -428,8 +428,14 @@ async function mockQuery(sql, params = []) {
       }
       if (sql.includes('progress =')) {
         const match = sql.match(/progress\s*=\s*\$(\d+)/i);
-        if (match) task.progress = params[parseInt(match[1], 10) - 1];
-        if (task.progress === 100) task.status = 'DONE';
+        if (match) task.progress = parseInt(params[parseInt(match[1], 10) - 1], 10);
+        if (!sql.includes('status =')) {
+          if (task.progress === 100) {
+            task.status = 'DONE';
+          } else if (task.status === 'DONE') {
+            task.status = task.progress > 0 ? 'IN_PROGRESS' : 'TODO';
+          }
+        }
       }
       if (sql.includes('title =')) {
         const match = sql.match(/title\s*=\s*\$(\d+)/i);
