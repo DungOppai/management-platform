@@ -41,7 +41,22 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const [projectId, setProjectId] = useState<string>(defaultProjects[0].id);
   const [allTasks, setAllTasks] = useState<Task[]>(initialTasks);
   const [membersList, setMembersList] = useState<Member[]>(defaultMembers);
-  const [currentUser, setCurrentUser] = useState<Member>(defaultMembers[0]);
+  const [currentUser, setCurrentUser] = useState<Member>(() => {
+    try {
+      const savedUser = localStorage.getItem('user');
+      if (savedUser) {
+        const u = JSON.parse(savedUser);
+        return {
+          id: String(u.id),
+          name: u.full_name,
+          initials: getInitials(u.full_name),
+          role: u.role === 'LEADER' ? 'Trưởng nhóm' : 'Thành viên',
+          tone: 'accent'
+        };
+      }
+    } catch {}
+    return defaultMembers[0];
+  });
 
   // Load Current User Profile from backend
   const fetchCurrentUser = useCallback(async () => {

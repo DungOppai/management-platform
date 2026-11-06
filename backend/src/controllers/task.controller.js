@@ -291,7 +291,3 @@ module.exports = {
   toggleChecklistItem,
   deleteChecklistItem,
 };
-  deleteTask,
-  addChecklistItem,
-  toggleChecklistItem,
-};
