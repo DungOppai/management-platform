@@ -10,7 +10,7 @@ import { useWorkspace } from '../contexts/WorkspaceContext';
 import { messages as fallbackMessages } from '../data/messages';
 import { isoFromToday } from '../utils/date';
 import api from '../services/api';
-import { getSocket } from '../services/socket';
+import { getSocket, joinProjectRoom } from '../services/socket';
 import type { ChatMessage, SuggestedTask, Priority } from '../types/project';
 
 interface Extraction {
@@ -50,18 +50,44 @@ export function Chat() {
   useEffect(() => {
     fetchMessages();
 
+    if (project?.id) {
+      joinProjectRoom(project.id);
+    }
+
     // Socket.io Realtime Listener
     const socket = getSocket();
     const handleNewMessage = (msg: any) => {
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: String(msg.id),
-          authorId: String(msg.sender_id),
-          text: msg.content,
-          time: format(new Date(msg.created_at || Date.now()), 'HH:mm')
+      setMessages((prev) => {
+        if (prev.some((m) => m.id === String(msg.id))) return prev;
+
+        const tempIdx = prev.findIndex(
+          (m) =>
+            m.id.startsWith('msg-') &&
+            m.text === msg.content &&
+            m.authorId === String(msg.sender_id)
+        );
+
+        if (tempIdx !== -1) {
+          const next = [...prev];
+          next[tempIdx] = {
+            id: String(msg.id),
+            authorId: String(msg.sender_id),
+            text: msg.content,
+            time: format(new Date(msg.created_at || Date.now()), 'HH:mm')
+          };
+          return next;
         }
-      ]);
+
+        return [
+          ...prev,
+          {
+            id: String(msg.id),
+            authorId: String(msg.sender_id),
+            text: msg.content,
+            time: format(new Date(msg.created_at || Date.now()), 'HH:mm')
+          }
+        ];
+      });
     };
 
     socket.on('new_message', handleNewMessage);
