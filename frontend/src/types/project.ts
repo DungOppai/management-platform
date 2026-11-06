@@ -54,12 +54,20 @@ export interface SuggestedTask {
   priority: Priority;
 }
 
+export interface MessageAttachment {
+  type: 'image' | 'video' | 'audio' | 'file';
+  url: string;
+  name: string;
+  size?: number;
+}
+
 export interface ChatMessage {
   id: string;
   authorId: string;
   text: string;
   time: string;
   suggestion?: SuggestedTask;
+  attachment?: MessageAttachment;
 }
 
 export interface Activity {

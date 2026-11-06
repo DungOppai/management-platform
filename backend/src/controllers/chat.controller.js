@@ -15,7 +15,17 @@ async function listMessages(req, res) {
       [projectId, limit]
     );
 
-    res.json({ messages: result.rows });
+    const messages = result.rows.map((m) => {
+      let meta = m.metadata;
+      if (typeof meta === 'string') {
+        try {
+          meta = JSON.parse(meta);
+        } catch {}
+      }
+      return { ...m, metadata: meta };
+    });
+
+    res.json({ messages });
   } catch (err) {
     console.error('List messages error:', err);
     res.status(500).json({ error: 'Lỗi khi tải lịch sử chat' });
@@ -31,16 +41,26 @@ async function sendMessage(req, res) {
       return res.status(400).json({ error: 'Nội dung tin nhắn không được để trống' });
     }
 
+    let metaJson = null;
+    let metaObj = metadata || null;
+    if (metadata) {
+      metaJson = typeof metadata === 'string' ? metadata : JSON.stringify(metadata);
+      if (typeof metadata === 'string') {
+        try { metaObj = JSON.parse(metadata); } catch {}
+      }
+    }
+
     const result = await db.query(
       `INSERT INTO chat_messages (project_id, sender_id, content, message_type, metadata)
        VALUES ($1, $2, $3, $4, $5)
        RETURNING *`,
-      [projectId, req.user.id, content.trim(), messageType || 'TEXT', metadata ? JSON.stringify(metadata) : null]
+      [projectId, req.user.id, content.trim(), messageType || 'TEXT', metaJson]
     );
 
     const message = result.rows[0];
     const fullMessage = {
       ...message,
+      metadata: metaObj,
       sender_name: req.user.full_name,
       sender_email: req.user.email,
     };

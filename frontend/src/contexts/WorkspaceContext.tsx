@@ -21,6 +21,7 @@ interface WorkspaceValue {
   addChecklist: (taskId: string, title: string) => Promise<void>;
   toggleChecklist: (taskId: string, checklistId: string) => Promise<void>;
   deleteChecklist: (taskId: string, checklistId: string) => Promise<void>;
+  createProject: (input: { title: string; code: string; description?: string }) => Promise<Project>;
   logout: () => void;
   refreshData: () => Promise<void>;
 }
@@ -333,6 +334,27 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const createProject = useCallback(async (input: { title: string; code: string; description?: string }): Promise<Project> => {
+    const res = await api.post('/projects', {
+      title: input.title.trim(),
+      code: input.code.trim().toUpperCase(),
+      description: input.description || ''
+    });
+
+    const p = res.data.project;
+    const newProj: Project = {
+      id: String(p.id),
+      code: p.code,
+      name: p.title,
+      dueDate: '2027-01-15',
+      memberIds: [currentUser.id]
+    };
+
+    setProjectsList((prev) => [...prev, newProj]);
+    setProjectId(newProj.id);
+    return newProj;
+  }, [currentUser.id]);
+
   const logout = useCallback(() => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -354,10 +376,11 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       addChecklist,
       toggleChecklist,
       deleteChecklist,
+      createProject,
       logout,
       refreshData: () => fetchProjectData(project.id)
     }),
-    [projectsList, project, allTasks, membersList, currentUser, getMember, updateTask, addTask, deleteTask, addChecklist, toggleChecklist, deleteChecklist, logout, fetchProjectData]
+    [projectsList, project, allTasks, membersList, currentUser, getMember, updateTask, addTask, deleteTask, addChecklist, toggleChecklist, deleteChecklist, createProject, logout, fetchProjectData]
   );
 
   return <WorkspaceContext.Provider value={value}>{children}</WorkspaceContext.Provider>;

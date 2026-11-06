@@ -305,8 +305,33 @@ async function mockQuery(sql, params = []) {
     return { rows: [user] };
   }
 
-  // 5. SELECT projects
-  if (lower.includes('from projects p') || lower.includes('from projects where')) {
+  // 5. SELECT / INSERT projects
+  if (lower.startsWith('insert into projects')) {
+    const proj = {
+      id: memoryStore.seq.projects++,
+      code: params[0],
+      title: params[1],
+      description: params[2] || '',
+      owner_id: params[3],
+      created_at: new Date()
+    };
+    memoryStore.projects.push(proj);
+    return { rows: [proj] };
+  }
+
+  if (lower.startsWith('insert into project_members')) {
+    const pm = {
+      id: memoryStore.seq.project_members++,
+      project_id: parseInt(params[0], 10),
+      user_id: parseInt(params[1], 10),
+      project_role: params[2] || 'MEMBER',
+      joined_at: new Date()
+    };
+    memoryStore.project_members.push(pm);
+    return { rows: [pm] };
+  }
+
+  if (lower.includes('from projects p') || lower.includes('from projects where') || lower.includes('from projects')) {
     if (lower.includes('where p.id =') || lower.includes('where id =')) {
       const id = parseInt(params[0], 10);
       const p = memoryStore.projects.find(proj => proj.id === id);
