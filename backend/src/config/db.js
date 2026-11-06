@@ -396,6 +396,11 @@ async function mockQuery(sql, params = []) {
     if (item) item.is_completed = !item.is_completed;
     return { rows: item ? [item] : [] };
   }
+  if (lower.startsWith('delete from task_checklists')) {
+    const itemId = parseInt(params[0], 10);
+    memoryStore.task_checklists = memoryStore.task_checklists.filter(c => c.id !== itemId);
+    return { rows: [] };
+  }
 
   // Create Task
   if (lower.startsWith('insert into tasks')) {

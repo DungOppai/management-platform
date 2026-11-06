@@ -11,5 +11,6 @@ router.put('/:id', taskController.updateTask);
 router.delete('/:id', taskController.deleteTask);
 router.post('/:id/checklists', taskController.addChecklistItem);
 router.put('/checklists/:itemId/toggle', taskController.toggleChecklistItem);
+router.delete('/checklists/:itemId', taskController.deleteChecklistItem);
 
 module.exports = router;

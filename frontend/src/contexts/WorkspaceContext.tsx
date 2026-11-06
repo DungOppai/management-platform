@@ -18,6 +18,9 @@ interface WorkspaceValue {
   updateTask: (id: string, patch: Partial<Task>) => void;
   addTask: (input: NewTaskInput) => Task;
   deleteTask: (id: string) => void;
+  addChecklist: (taskId: string, title: string) => Promise<void>;
+  toggleChecklist: (taskId: string, checklistId: string) => Promise<void>;
+  deleteChecklist: (taskId: string, checklistId: string) => Promise<void>;
   logout: () => void;
   refreshData: () => Promise<void>;
 }
@@ -248,6 +251,73 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const addChecklist = useCallback(async (taskId: string, title: string) => {
+    if (!title.trim()) return;
+    const tempId = `c-${Date.now()}`;
+    const newItem = { id: tempId, title: title.trim(), done: false };
+
+    setAllTasks((prev) =>
+      prev.map((t) => (t.id === taskId ? { ...t, checklist: [...t.checklist, newItem] } : t))
+    );
+
+    try {
+      const res = await api.post(`/tasks/${taskId}/checklists`, { title: title.trim() });
+      if (res.data?.item) {
+        const realId = String(res.data.item.id);
+        setAllTasks((prev) =>
+          prev.map((t) =>
+            t.id === taskId
+              ? {
+                  ...t,
+                  checklist: t.checklist.map((c) => (c.id === tempId ? { ...c, id: realId } : c)),
+                }
+              : t
+          )
+        );
+      }
+    } catch (err) {
+      console.warn('Failed to add checklist item to backend:', err);
+    }
+  }, []);
+
+  const toggleChecklist = useCallback(async (taskId: string, checklistId: string) => {
+    setAllTasks((prev) =>
+      prev.map((t) => {
+        if (t.id !== taskId) return t;
+        const nextChecklist = t.checklist.map((c) =>
+          c.id === checklistId ? { ...c, done: !c.done } : c
+        );
+        const total = nextChecklist.length;
+        const doneCount = nextChecklist.filter((c) => c.done).length;
+        const progress = total > 0 ? Math.round((doneCount / total) * 100) : t.progress;
+        const status = progress === 100 ? 'done' : (t.status === 'done' ? 'in_progress' : t.status);
+        return { ...t, checklist: nextChecklist, progress, status };
+      })
+    );
+
+    try {
+      await api.put(`/tasks/checklists/${checklistId}/toggle`);
+    } catch (err) {
+      console.warn('Failed to toggle checklist on backend:', err);
+    }
+  }, []);
+
+  const deleteChecklist = useCallback(async (taskId: string, checklistId: string) => {
+    setAllTasks((prev) =>
+      prev.map((t) => {
+        if (t.id !== taskId) return t;
+        const nextChecklist = t.checklist.filter((c) => c.id !== checklistId);
+        return { ...t, checklist: nextChecklist };
+      })
+    );
+
+    try {
+      await api.delete(`/tasks/checklists/${checklistId}`);
+    } catch (err) {
+      console.warn('Failed to delete checklist on backend:', err);
+    }
+  }, []);
+
   const logout = useCallback(() => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -266,10 +336,13 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       updateTask,
       addTask,
       deleteTask,
+      addChecklist,
+      toggleChecklist,
+      deleteChecklist,
       logout,
       refreshData: () => fetchProjectData(project.id)
     }),
-    [projectsList, project, allTasks, membersList, currentUser, getMember, updateTask, addTask, deleteTask, logout, fetchProjectData]
+    [projectsList, project, allTasks, membersList, currentUser, getMember, updateTask, addTask, deleteTask, addChecklist, toggleChecklist, deleteChecklist, logout, fetchProjectData]
   );
 
   return <WorkspaceContext.Provider value={value}>{children}</WorkspaceContext.Provider>;

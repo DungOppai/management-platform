@@ -272,10 +272,25 @@ async function toggleChecklistItem(req, res) {
   }
 }
 
+async function deleteChecklistItem(req, res) {
+  try {
+    const { itemId } = req.params;
+    await db.query(`DELETE FROM task_checklists WHERE id = $1`, [itemId]);
+    res.json({ message: 'Xóa mục checklist thành công' });
+  } catch (err) {
+    res.status(500).json({ error: 'Lỗi khi xóa checklist' });
+  }
+}
+
 module.exports = {
   listTasksByProject,
   createTask,
   updateTask,
+  deleteTask,
+  addChecklistItem,
+  toggleChecklistItem,
+  deleteChecklistItem,
+};
   deleteTask,
   addChecklistItem,
   toggleChecklistItem,
